@@ -7,6 +7,8 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+#define _USE_ESC_POS_
+
 #include "adc.h"
 #include "defines.h"
 #include "ioconfig.h"
@@ -14,6 +16,7 @@
 #include "pic.h"
 #include "power.h"
 #include "protocol.h"
+#include "esc-pos.h"
 #include "smp640.h"
 #include "spi.h"
 #include "uart.h"
@@ -31,7 +34,7 @@
 //系统温度
 extern float SysTempearature;
 //LCD显示缓冲区
-extern uint8_t xdata LCD_Buffer[8];
+extern uint8_t LCD_Buffer[8];
 //是否过热
 extern bit isOverHeating;
 //允许打印, 置零为停止打印 (在uart.c声明)

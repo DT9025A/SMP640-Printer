@@ -35,9 +35,10 @@ bit informedLowPower = 1;
 //初始化为过热状态
 float SysTempearature = TEMP_ALERT + 1;
 //sprintf格式化缓冲区
-uint8_t xdata LCD_Buffer[8];
+uint8_t LCD_Buffer[8];
 //加热时间(us)
-uint16_t heatTime = 8500;
+uint16_t heatTime = 6000;
+uint8_t xdata FLASH_PAGE[256];
 
 void main()
 {
@@ -56,16 +57,36 @@ void main()
     Interrupt_Init();                          //初始化中断
     delay_ms(500);
 
+
+    LCD_PrintString(0, 0, " Loading FLASH  ");
+    count = SPIFLASH_ReadMFDVID();
+    if (count & 0xff == 0)
+    {
+        LCD_PrintString(0, 0, "Unable to detect");
+        LCD_PrintString(0, 1, "flash size.     ");
+        while (1) //不存在, 在这停顿
+            ;
+    }
+    sprintf(LCD_Buffer, "%02X %02X", count >> 8, count & 0xff);
+    LCD_PrintString(0, 0, " DeviceID:      ");
+    LCD_PrintString(10, 0, LCD_Buffer);
+
+    LCD_PrintString(0, 1, " Flash size:    ");
+    sprintf(LCD_Buffer, "%dMB", (1 << (count & 0x0f)) / 8);
+    LCD_PrintString(12, 1, LCD_Buffer);
+    delay_ms(2000);
+    
+    // LCD_PrintString(0, 0, "Erasing Flash...");
+    // SPIFLASH_ChipErase();
+    // SPIFLASH_WaitBUSY();
+    // LCD_PrintString(0, 1, "    Erased.     ");
+    // delay_ms(500);
+
+    LCD_Clear();
     LCD_PrintString(0, 0, "Checking Printer"); //显点字
-
-    count = SPIFLASH_ReadSR();
-    UART_SendData(count >> 8);
-    UART_SendData(count & 0xff);
-
-
     if (!SMP640_Exists())                      //判断打印头是否存在
     {
-        LCD_PrintString(0, 0, "  Check Failed  ");
+        LCD_PrintString(0, 0, "  Printer ERROR ");
         LCD_PrintString(0, 1, "Data trans error");
         while (1) //不存在, 在这停顿
             ;

@@ -26,7 +26,7 @@ bit SMP640_Exists();
 
 /*************缓冲区*************/
 //打印头缓冲区行数
-#define SMP640_BUF_SIZE 13
+#define SMP640_BUF_SIZE 1
 
 //初始化打印缓冲区和可用行表
 #define SMP640_BUFFER_INIT                                       \
@@ -68,7 +68,7 @@ uint16_t SMP640_Buffer_NextLine(bit available);
 #define MOTOR_STEP_STOP 4
 
 //步进电机换相间隔时长
-#define MOTOR_DELAY_US 750
+#define MOTOR_DELAY_US 800
 
 //电机走纸第step步
 void SMP640_Motor_Step(uint8_t step);

@@ -49,6 +49,8 @@ enum REPLY
     ERR_LOWPOWER
 };
 
+#ifndef _USE_ESC_POS_
+
 extern bit enablePrinting;
 extern bit isOverHeating;
 extern bit stateChanged;
@@ -61,5 +63,7 @@ extern uint8_t strobeMode;
 
 void UART_Process_Data();
 void LCD_ShowData();
+
+#endif
 
 #endif

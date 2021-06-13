@@ -63,6 +63,7 @@ code float Rp = 30000.0;
 code float T2 = (273.15 + 25.0);
 code float Bx = 3950.0;
 code float Ka = 273.15;
+code float arg1 = 3950.0 / (273.15 + 25.0);
 
 //开/关当前STB的加热, 参数指定加热STB号
 void SMP640_Strobe(uint8_t stb)
@@ -79,13 +80,17 @@ float SMP640_Heat_Temp()
     int read;
 
     read = ADC_Read(0);
-    Rt = (-30000.0f * read) / (read - 1551.52f);
+    Rt = (-30000.0f * read) / (read - 1723.52f);
 
+    // temp = Rt / Rp;
+    // temp = log(temp); //ln(Rt/Rp)
+    // temp /= Bx;       //ln(Rt/Rp)/B
+    // temp += (1 / T2);
+    // temp = 1 / (temp);
+    // temp -= Ka;
     temp = Rt / Rp;
-    temp = log(temp); //ln(Rt/Rp)
-    temp /= Bx;       //ln(Rt/Rp)/B
-    temp += (1 / T2);
-    temp = 1 / (temp);
+    temp = log(temp) + arg1;
+    temp = Bx / temp;
     temp -= Ka;
     return temp;
 }
@@ -93,7 +98,7 @@ float SMP640_Heat_Temp()
 #pragma endregion
 
 #pragma region 打印
-uint8_t strobeMode = STROBE_2;
+uint8_t strobeMode = STROBE_3;
 
 //比较数据
 bit memcmp_val(uint8_t *src, uint8_t size, uint8_t val)
