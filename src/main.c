@@ -47,7 +47,7 @@ void main()
     //获取行变量
     uint16_t line = 0xffff;
 
-    IO_Init();                                 //设置IO模式
+    IO_Init(); //设置IO模式
     SPIFLASH_NCS;
     LCD_Init();                                //初始化LCD1602
     LCD_Clear();                               //清屏
@@ -56,7 +56,6 @@ void main()
     UART_Init();                               //初始化UART
     Interrupt_Init();                          //初始化中断
     delay_ms(500);
-
 
     LCD_PrintString(0, 0, " Loading FLASH  ");
     count = SPIFLASH_ReadMFDVID();
@@ -75,7 +74,7 @@ void main()
     sprintf(LCD_Buffer, "%dMB", (1 << (count & 0x0f)) / 8);
     LCD_PrintString(12, 1, LCD_Buffer);
     delay_ms(2000);
-    
+
     // LCD_PrintString(0, 0, "Erasing Flash...");
     // SPIFLASH_ChipErase();
     // SPIFLASH_WaitBUSY();
@@ -254,9 +253,13 @@ void INT0_ISR() interrupt 0
 }
 
 //外部中断1 中断服务程序
+//FEED
 void INT1_ISR() interrupt 2
 {
-    SMP640_BUFFER_INIT;
+    uint8_t d = 10;
+    enablePrinting = 1;
+    while (d--)
+        SMP640_Motor_DotLine();
 }
 
 //获取过热状态
