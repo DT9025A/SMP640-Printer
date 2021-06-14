@@ -32,8 +32,8 @@
 #define EOT 0x04
 #define EOF 0xFF
 
-extern bit enablePrinting;
 extern uint16_t heatTime;
+extern uint16_t count;
 
 void UART_Process_Data();
 

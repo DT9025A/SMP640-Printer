@@ -1,12 +1,17 @@
 #include "esc-pos.h"
 
-uint8_t onProcessingCommand = CMD_NUL; //当前正在处理的指令
-uint8_t readyCommand = CMD_NUL;        //校验完成将要处理的指令
+//当前正在处理的指令
+uint8_t onProcessingCommand = CMD_NUL;
+//校验完成将要处理的指令
+uint8_t readyCommand = CMD_NUL;
 
-uint8_t RXBuf[SMP640_LINE_SIZE]; //'接收数据'指令的缓冲区
-uint8_t rxPtr;                   //'接收数据'指令的缓冲区下标
+//'GS v 0'指令的缓冲区
+uint8_t xdata RXBuf[SMP640_LINE_SIZE];
+//'GS v 0'指令的缓冲区下标
+uint8_t rxPtr;
 
-uint8_t printedLine = 0; //GS v 0已打印的行数, 为兼容ESC J
+//GS v 0已打印的行数, 为兼容ESC J
+uint8_t printedLine = 0;
 
 uint8_t temp8;
 uint16_t temp16;
@@ -22,25 +27,30 @@ void UART_Process_Data()
 {
     if (Uart_Available())
     {
-        LED_TRANSFERING = 0;
         switch (onProcessingCommand)
         {
-
-        //没有在处理的指令
         case CMD_NUL:
+            //没有在处理的指令
             temp8 = Uart_Getch();
             if (temp8 == ESC || temp8 == GS)
             {
+                LED_TRANSFERING = 0;
                 onProcessingCommand = Uart_Getch(); //设置在处理指令
                 rxPtr = 0;
             }
-
             break;
 
         case '@':
             //ESC @
             printedLine = 0;
             FinCMD();
+            break;
+
+        case 'r':
+            //ESC r
+            LCD_ShowStatus(IDLE);
+            LED_TRANSFERING = 1;
+            count = 0;
             break;
 
         case 'v':
@@ -67,14 +77,14 @@ void UART_Process_Data()
             FinCMD();
             break;
 
-        //打印走纸
         case 'J':
+            //ESC J 打印走纸
             temp8 = Uart_Getch();
             FinCMD();
             break;
 
-        //无条件走纸
         case 'd':
+            //ESC d 无条件走纸
             temp8 = Uart_Getch();
             temp8 *= 8;
             printedLine = 0;
@@ -99,10 +109,6 @@ void UART_Process_Data()
                 break;
             }
             readyCommand = onProcessingCommand = CMD_NUL; //复位
-
-            SMP640_Motor_Step(MOTOR_STEP_STOP); //关电机
-            LCD_ShowStatus(IDLE);
-            LED_TRANSFERING = 1;
             break;
         }
     }

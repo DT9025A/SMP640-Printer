@@ -38,17 +38,18 @@ float SysTempearature = TEMP_ALERT + 1;
 uint8_t LCD_Buffer[8];
 //加热时间(us)
 uint16_t heatTime = 6000;
+//循环计数变量
+uint16_t count = 0;
+//FLASH缓冲区
 uint8_t xdata FLASH_PAGE[256];
 
 void main()
 {
-    //循环计数变量
-    uint16_t count = 0;
     //获取行变量
     uint16_t line = 0xffff;
 
-    IO_Init(); //设置IO模式
-    SPIFLASH_NCS;
+    IO_Init();                                 //设置IO模式
+    delay_ms(100);                             //延时一会, 防止1602乱码
     LCD_Init();                                //初始化LCD1602
     LCD_Clear();                               //清屏
     LCD_PrintString(0, 0, "  Initializing  "); //显点字
@@ -125,7 +126,7 @@ void main()
         }
 
         //缺纸检测
-        if (!SMP640_PaperCheck() && !needInformNoPaper)
+        if (!SMP640_PaperCheck() && needInformNoPaper == 0)
         {
             LCD_ShowStatus(STOP);
             enablePrinting = 0;
@@ -166,7 +167,7 @@ void main()
             }
         }
 
-        if (needInformNoPaper && !informedNoPaper)
+        if (needInformNoPaper && informedNoPaper == 0)
         {
             UART_SendData(ERR_NOPAPER);
             informedNoPaper = 1;
@@ -189,12 +190,6 @@ void main()
                 LCD_ShowStatus(PRINTING);
                 SMP640_Print_Line_Without_PowerDown(SMP640_BUFFER_LINE_PTR(line), SMP640_LINE_SIZE, heatTime);
                 SMP640_BUFFER_LINE_AVAILABLE_CLEAR(line);
-                /* if (SMP640_BUFFER_LINE_NEXT_AVAILABLE() == 0xffff)
-                {
-                    SMP640_VHEAT_OFF;
-                    SMP640_Motor_Step(MOTOR_STEP_STOP); //关闭电机和STB
-                    LCD_ShowStatus(IDLE);
-                } */
                 count = 0;
             }
 
@@ -231,6 +226,7 @@ void IO_Init()
 
     //P5: 高阻输入 电压检测
     PIN_MODE_CONFIG(P5, PIN_4, PIN_MODE_HIRGRESIN);
+    SPIFLASH_NCS;
 }
 
 //初始化中断

@@ -12,7 +12,9 @@
 #include <STC8H.H>
 
 //缓冲区大小
-#define UART_BUFFER_SIZE 700
+#define UART_BUFFER_SIZE 600
+#define _19200BPS
+
 //环形缓冲区
 extern uint8_t xdata UART_BUFFER[UART_BUFFER_SIZE];
 

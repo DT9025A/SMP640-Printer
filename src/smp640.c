@@ -98,7 +98,7 @@ float SMP640_Heat_Temp()
 #pragma endregion
 
 #pragma region 打印
-uint8_t strobeMode = STROBE_3;
+uint8_t xdata strobeMode = STROBE_3;
 
 //比较数据
 bit memcmp_val(uint8_t *src, uint8_t size, uint8_t val)

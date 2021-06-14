@@ -42,7 +42,7 @@ extern bit enablePrinting;
 //电源供电信息 (在power.c声明)
 extern PowerStatus SysPowerStatus;
 //加热模式 (在smp640.c声明)
-extern uint8_t strobeMode;
+extern uint8_t xdata strobeMode;
 
 //初始化IO
 void IO_Init();
