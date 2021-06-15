@@ -13,7 +13,9 @@ uint8_t rxPtr;
 //GS v 0已打印的行数, 为兼容ESC J
 uint8_t printedLine = 0;
 
+//临时变量
 uint8_t temp8;
+//临时变量
 uint16_t temp16;
 
 //结束指令预处理
@@ -25,7 +27,7 @@ void FinCMD()
 
 void UART_Process_Data()
 {
-    if (Uart_Available())
+    if (Uart_Available() == 1)
     {
         switch (onProcessingCommand)
         {
@@ -34,7 +36,6 @@ void UART_Process_Data()
             temp8 = Uart_Getch();
             if (temp8 == ESC || temp8 == GS)
             {
-                LED_TRANSFERING = 0;
                 onProcessingCommand = Uart_Getch(); //设置在处理指令
                 rxPtr = 0;
             }
@@ -42,15 +43,12 @@ void UART_Process_Data()
 
         case '@':
             //ESC @
-            printedLine = 0;
             FinCMD();
             break;
 
         case 'r':
             //ESC r
-            LCD_ShowStatus(IDLE);
-            LED_TRANSFERING = 1;
-            count = 0;
+            FinCMD();
             break;
 
         case 'v':
@@ -60,7 +58,7 @@ void UART_Process_Data()
             temp16 = Uart_Getch();       //xl
             temp16 += Uart_Getch() << 8; //xh
             temp8 = Uart_Getch();        //yl
-            Uart_Getch();                //yh 本驱动就没出现过yh非零的情况
+            Uart_Getch();                //yh 用的这驱动就没出现过yh非零的情况
             temp16 *= temp8;             //(x)*(y)
 
             LCD_ShowStatus(PRINTING);
@@ -105,7 +103,16 @@ void UART_Process_Data()
                 printedLine = 0;
                 break;
 
+            case '@':
+                printedLine = 0;
+                LCD_ShowStatus(IDLE);
+                count = 0;
+            case 'v':
+                break;
+
             default:
+                LCD_ShowStatus(IDLE);
+                count = 0;
                 break;
             }
             readyCommand = onProcessingCommand = CMD_NUL; //复位

@@ -52,7 +52,7 @@ sbit SMP640_VHEAT = P2 ^ 7;
 sbit KEYA = P3 ^ 2;
 sbit KEYB = P3 ^ 3;
 sbit LED_WORKING = P3 ^ 4;
-sbit LED_TRANSFERING = P3 ^ 5;
+sbit LED_MOTOR_DRIVING = P3 ^ 5;
 sbit SMP640_CO = P3 ^ 6;
 sbit SMP640_LATCH = P3 ^ 7;
 

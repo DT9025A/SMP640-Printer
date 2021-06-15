@@ -49,8 +49,8 @@ void main()
     uint16_t line = 0xffff;
 
     IO_Init();                                 //设置IO模式
-    delay_ms(100);                             //延时一会, 防止1602乱码
     LCD_Init();                                //初始化LCD1602
+    delay_ms(100);
     LCD_Clear();                               //清屏
     LCD_PrintString(0, 0, "  Initializing  "); //显点字
     SPI_Init();                                //初始化SPI
@@ -64,7 +64,7 @@ void main()
     {
         LCD_PrintString(0, 0, "Unable to detect");
         LCD_PrintString(0, 1, "flash size.     ");
-        while (1) //不存在, 在这停顿
+        while (1)
             ;
     }
     sprintf(LCD_Buffer, "%02X %02X", count >> 8, count & 0xff);
@@ -74,7 +74,7 @@ void main()
     LCD_PrintString(0, 1, " Flash size:    ");
     sprintf(LCD_Buffer, "%dMB", (1 << (count & 0x0f)) / 8);
     LCD_PrintString(12, 1, LCD_Buffer);
-    delay_ms(2000);
+    //delay_ms(2000);
 
     // LCD_PrintString(0, 0, "Erasing Flash...");
     // SPIFLASH_ChipErase();
@@ -88,7 +88,7 @@ void main()
     {
         LCD_PrintString(0, 0, "  Printer ERROR ");
         LCD_PrintString(0, 1, "Data trans error");
-        while (1) //不存在, 在这停顿
+        while (1)
             ;
     }
     SMP640_Clear_Register();            //存在, 清空缓存数据
@@ -107,6 +107,14 @@ void main()
         //是否更新数据显示
         if (stateChanged)
         {
+            if (enablePrinting)
+            {
+                LCD_ShowStatus(IDLE);
+            }
+            else
+            {
+                LCD_ShowStatus(STOP);
+            }
             LCD_ShowData();
             stateChanged = 0;
         }
@@ -149,22 +157,11 @@ void main()
         }
 
         //闲置超时更新界面
-        if (count > 6000)
+        if (count > 50000)
         {
             count = 0;
+            SMP640_Motor_Step(MOTOR_STEP_STOP);
             stateChanged = 1;
-        }
-
-        //闲置关电
-        if (count > 5)
-        {
-            //这个移动到LCD_ShowStatus(IDLE)里面了
-            //SMP640_VHEAT_OFF;
-            //SMP640_Motor_Step(MOTOR_STEP_STOP); //关闭电机和STB
-            if (enablePrinting)
-            {
-                LCD_ShowStatus(IDLE);
-            }
         }
 
         if (needInformNoPaper && informedNoPaper == 0)
@@ -184,14 +181,14 @@ void main()
         }
 
         //打印
-        if (enablePrinting)
-            if ((line = SMP640_BUFFER_LINE_NEXT_AVAILABLE()) != 0xffff)
-            {
-                LCD_ShowStatus(PRINTING);
-                SMP640_Print_Line_Without_PowerDown(SMP640_BUFFER_LINE_PTR(line), SMP640_LINE_SIZE, heatTime);
-                SMP640_BUFFER_LINE_AVAILABLE_CLEAR(line);
-                count = 0;
-            }
+        // if (enablePrinting)
+        //     if ((line = SMP640_BUFFER_LINE_NEXT_AVAILABLE()) != 0xffff)
+        //     {
+        //         LCD_ShowStatus(PRINTING);
+        //         SMP640_Print_Line_Without_PowerDown(SMP640_BUFFER_LINE_PTR(line), SMP640_LINE_SIZE, heatTime);
+        //         SMP640_BUFFER_LINE_AVAILABLE_CLEAR(line);
+        //         count = 0;
+        //     }
 
         //处理打印数据
         UART_Process_Data();
@@ -222,7 +219,7 @@ void IO_Init()
     PIN_MODE_CONFIG(P3, PIN_4 + PIN_5, PIN_MODE_PUSHPULL);
     PIN_MODE_CONFIG(P3, PIN_6, PIN_MODE_HIRGRESIN);
     SMP640_LATCH = 1;
-    LED_TRANSFERING = LED_WORKING = 1;
+    LED_MOTOR_DRIVING = LED_WORKING = 1;
 
     //P5: 高阻输入 电压检测
     PIN_MODE_CONFIG(P5, PIN_4, PIN_MODE_HIRGRESIN);
@@ -256,6 +253,7 @@ void INT1_ISR() interrupt 2
     enablePrinting = 1;
     while (d--)
         SMP640_Motor_DotLine();
+    SMP640_Motor_Step(MOTOR_STEP_STOP);
 }
 
 //获取过热状态
@@ -308,8 +306,6 @@ void LCD_ShowData()
         LCD_PrintString(15, 1, "N");
         break;
     }
-    // sprintf(LCD_Buffer, "%.1fV", SysPowerStatus.voltage / 1000);
-    // LCD_PrintString(12, 1, LCD_Buffer);
 
     if (isOverHeating)
         LCD_PrintChar(6, 1, CH_OVERHEAT);

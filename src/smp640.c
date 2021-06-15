@@ -98,7 +98,7 @@ float SMP640_Heat_Temp()
 #pragma endregion
 
 #pragma region 打印
-uint8_t xdata strobeMode = STROBE_3;
+uint8_t xdata strobeMode = STROBE_2;
 
 //比较数据
 bit memcmp_val(uint8_t *src, uint8_t size, uint8_t val)
@@ -342,6 +342,7 @@ void SMP640_Motor_Step(uint8_t step)
         MOTOR_IBN = 0;
         break;
     }
+    LED_MOTOR_DRIVING = !(MOTOR_IAN || MOTOR_IAP || MOTOR_IBP || MOTOR_IBN);
 }
 
 //电机走纸一点行

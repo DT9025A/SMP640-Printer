@@ -67,7 +67,7 @@ void LCD_WriteCGRAM(void)
 void LCD_Init(void)
 {
     LCD_RW = 0;
-    delay_ms(1);
+    delay_ms(10);
     LCD_Command(0x28);
     delay_ms(1);
     LCD_Enable();
@@ -80,7 +80,7 @@ void LCD_Init(void)
     LCD_Command(0x0c); //显示打开
     delay_ms(1);
     LCD_Command(0x02); //指针回零
-    delay_ms(10);
+    delay_ms(1);
 }
 
 /*--------------------------------------------------------------*/
@@ -130,14 +130,12 @@ void LCD_ShowStatus(uint8_t s)
     if (lastState != s)
     {
         LCD_PrintChar(10, 1, CH_IDLE);
-        //LED_TRANSFERING = 1;
         lastState = s;
 
         switch (s)
         {
         case TRANSFERING:
             LCD_PrintString(0, 0, "  Transfering.  ");
-            //LED_TRANSFERING = 0;
             break;
 
         case PRINTING:
@@ -147,21 +145,20 @@ void LCD_ShowStatus(uint8_t s)
 
         case IDLE:
             LCD_PrintString(0, 0, "      Idle      ");
-            SMP640_VHEAT_OFF;
-            SMP640_Motor_Step(MOTOR_STEP_STOP); //关闭电机和STB
             break;
 
         case STOP:
             LCD_PrintString(0, 0, "      STOP      ");
-            SMP640_VHEAT_OFF;
-            SMP640_Motor_Step(MOTOR_STEP_STOP); //关闭电机和STB
             break;
 
         default:
             LCD_PrintString(0, 0, "    UNKNOWN.    ");
+            break;
+        }
+        if (s != TRANSFERING && s != PRINTING)
+        {
             SMP640_VHEAT_OFF;
             SMP640_Motor_Step(MOTOR_STEP_STOP); //关闭电机和STB
-            break;
         }
     }
 }
